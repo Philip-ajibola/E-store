@@ -1,6 +1,7 @@
 package com.semicolon.africa.Estore.data.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,15 +10,14 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class Product {
-    @Column(nullable = false)
+    @NotNull(message = "ProductName can't be null")
     private String productName;
-    @Column(nullable = false)
     private String productDescription;
-    @Column(nullable = false)
+    @NotNull(message = "Provide a price for the product")
     private BigDecimal productPrice;
-    @Column(nullable = false)
+    @NotNull(message = "Provide a category")
     private ProductCategory category;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 }
