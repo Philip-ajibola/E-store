@@ -10,10 +10,17 @@ import com.semicolon.africa.Estore.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static com.semicolon.africa.Estore.utils.Mapper.map;
 
 @Service
 public class SellerServiceImpl implements SellerService{
+    @Override
+    public List<Product> findAllProductAdded(long sellerId) {
+        return productService.findAllProductBy(sellerId);
+    }
+
     @Autowired
     private Sellers sellers;
     @Autowired
@@ -60,9 +67,30 @@ public class SellerServiceImpl implements SellerService{
         return productService.deleteProduct(deleteProductRequest);
     }
 
+
+
     @Override
-    public String changeProductPrice(ChangeProductPriceRequest request) {
-        return productService.changeProductPrice(request);
+    public String editProduct(EditProductRequest editProductReQuest) {
+        return productService.editProduct(editProductReQuest);
+    }
+
+    @Override
+    public long count() {
+        return sellers.count();
+    }
+
+    @Override
+    public String deactivateAccount(Long sellerId) {
+        Seller seller = findSellerBy(sellerId);
+        sellers.delete(seller);
+        return "Account Deactivated";
+    }
+    private void checkIfUserIsLogin(Seller user){
+        if(!user.isActive()) throw new UserNotLoggedInException("User Not Logged In");
+    }
+
+    private Seller findSellerBy(Long sellerId) {
+        return sellers.findById(sellerId).orElseThrow(() -> new SellerNotFoundException("Seller Not Found"));
     }
 
     private void validateRequest(RegisterSellerRequest request){
