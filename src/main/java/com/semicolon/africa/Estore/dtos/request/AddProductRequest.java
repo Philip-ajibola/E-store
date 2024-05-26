@@ -15,4 +15,5 @@ public class AddProductRequest {
     private BigDecimal productPrice;
     @NotNull(message = "Provide a category")
     private ProductCategory category;
+    private long sellerId;
 }
