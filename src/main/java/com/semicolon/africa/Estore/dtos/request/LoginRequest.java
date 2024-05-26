@@ -1,4 +1,4 @@
-package com.semicolon.africa.Estore.services;
+package com.semicolon.africa.Estore.dtos.request;
 
 import lombok.Data;
 
