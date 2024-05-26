@@ -9,11 +9,11 @@ import lombok.Setter;
 @Entity
 @Table(name="items")
 public class Item {
-    @Column(nullable = false)
     private Integer quantity;
-    @OneToOne
-    @JoinColumn(nullable = false)
-    private Product product;
+    @JoinColumn
+    private Long productId;
+    @JoinColumn
+    private long customerId;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
