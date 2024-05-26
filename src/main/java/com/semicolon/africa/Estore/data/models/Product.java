@@ -17,6 +17,8 @@ public class Product {
     private BigDecimal productPrice;
     @NotNull(message = "Provide a category")
     private ProductCategory category;
+    @JoinColumn
+    private long sellerId;
     @Id
     @GeneratedValue
     private Long id;
