@@ -11,15 +11,12 @@ import lombok.Setter;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
-    @Column(unique=true, nullable=false)
     private String username;
-    @Column(nullable=false)
     private String password;
-    @Column(nullable=false,unique = true)
     private String email;
-    @Column(nullable=false,length=11)
+    private boolean isActive;
     private String phone;
     @OneToOne
     private Address address;
