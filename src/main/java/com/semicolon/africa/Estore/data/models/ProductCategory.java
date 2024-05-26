@@ -1,5 +1,5 @@
 package com.semicolon.africa.Estore.data.models;
 
 public enum ProductCategory {
-    ELECTRONICS,GROCERIES,UNTENSILS,CLOTHING
+    ELECTRONICS,GROCERIES,UNTENSILS, NONE, CLOTHING
 }
