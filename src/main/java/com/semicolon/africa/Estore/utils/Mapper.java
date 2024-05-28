@@ -1,18 +1,10 @@
 package com.semicolon.africa.Estore.utils;
 
-import com.semicolon.africa.Estore.data.models.Customer;
-import com.semicolon.africa.Estore.data.models.Item;
-import com.semicolon.africa.Estore.data.models.Product;
-import com.semicolon.africa.Estore.data.models.Seller;
-import com.semicolon.africa.Estore.dtos.request.AddItemToCartRequest;
-import com.semicolon.africa.Estore.dtos.request.AddProductRequest;
-import com.semicolon.africa.Estore.dtos.request.RegisterCustomerRequest;
-import com.semicolon.africa.Estore.dtos.request.RegisterSellerRequest;
-import com.semicolon.africa.Estore.dtos.response.AddItemResponse;
-import com.semicolon.africa.Estore.dtos.response.AddProductResponse;
-import com.semicolon.africa.Estore.dtos.response.RegisterCustomerResponse;
-import com.semicolon.africa.Estore.dtos.response.RegisterSellerResponse;
+import com.semicolon.africa.Estore.data.models.*;
+import com.semicolon.africa.Estore.dtos.request.*;
+import com.semicolon.africa.Estore.dtos.response.*;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class Mapper {
@@ -81,6 +73,38 @@ public class Mapper {
         item.setProductId(productId);
         item.setQuantity(quantity);
         return item;
+    }
+    public static Order map(PlaceOrderRequest placeOrderRequest, Item item, BillingInformation billingInformation, BigDecimal amount) {
+        Order order = new Order();
+        order.setCustomerId(placeOrderRequest.getCustomerId());
+        order.setItem(item);
+        order.setBillingInformation(billingInformation);
+        order.setAmount(amount);
+        order.setStatus(OrderStatus.PENDING);
+        return order;
+    }
+
+    public static Address map(CreateAddressRequest createAddressRequest) {
+        Address address = new Address();
+        address.setCity(createAddressRequest.getCity());
+        address.setStreet(createAddressRequest.getStreetName());
+        address.setHouseNumber(createAddressRequest.getHouseNumber());
+        return address;
+    }
+
+    public static BillingInformation map(CreateBillingFormatRequest createBillingFormatRequest, Address address) {
+        BillingInformation billingInformation = new BillingInformation();
+        billingInformation.setReceiverPhoneNumber(createBillingFormatRequest.getReceiversActiveContact());
+        billingInformation.setReceiversName(createBillingFormatRequest.getReceiversName());
+        billingInformation.setDeliveryAddress(address);
+        return billingInformation;
+    }
+
+    public  static PlaceOrderResponse map(Order order) {
+        PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse();
+        placeOrderResponse.setOrderId(order.getId());
+        placeOrderResponse.setStatus(order.getStatus());
+        return placeOrderResponse;
     }
 
 
