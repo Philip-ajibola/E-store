@@ -4,6 +4,10 @@ package com.semicolon.africa.Estore.data.models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.annotation.Lazy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Setter
@@ -21,4 +25,6 @@ public class Seller {
     private boolean isActive = false;
     @OneToOne
     private Address address;
+    @OneToMany(fetch = FetchType.EAGER)
+    List<Order> listOfOrders = new ArrayList<>();
 }
