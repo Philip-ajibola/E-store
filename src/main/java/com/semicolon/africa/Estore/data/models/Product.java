@@ -14,7 +14,7 @@ public class Product {
     private String productName;
     private String productDescription;
     @NotNull(message = "Provide a price for the product")
-    private BigDecimal productPrice;
+    private BigDecimal productPrice = new BigDecimal("0.0");
     @NotNull(message = "Provide a category")
     private ProductCategory category;
     @JoinColumn
