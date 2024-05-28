@@ -1,8 +1,6 @@
 package com.semicolon.africa.Estore.services;
 
-import com.semicolon.africa.Estore.data.models.Customer;
-import com.semicolon.africa.Estore.data.models.Product;
-import com.semicolon.africa.Estore.data.models.ProductCategory;
+import com.semicolon.africa.Estore.data.models.*;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.AddItemResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class CustomerServiceTest {
    @Autowired
    private CustomerService customerService;
+   @Autowired
+   private OrderService orderService;
    @Autowired
    private SellerService sellerService;
    @Autowired
@@ -43,13 +43,13 @@ class CustomerServiceTest {
        request = new RegisterCustomerRequest();
        request.setCustomer_email("ajibolaphilip10@gmail.com");
        request.setCustomer_name("CustomerName");
-       request.setCustomer_phone("CustomerPhone");
+       request.setCustomer_phone("09027531222");
        request.setPassword("Customer_password");
 
         RegisterSellerRequest registerSellerRequest = new RegisterSellerRequest();
         registerSellerRequest.setSeller_name("Sellername");
         registerSellerRequest.setSeller_email("ajibolaphilip10@gmail.com");
-        registerSellerRequest.setSeller_phone("SellerPhone");
+        registerSellerRequest.setSeller_phone("09027531222");
         registerSellerRequest.setPassword("Seller_password");
 
         sellerId =sellerService.registerSeller(registerSellerRequest).getId();
@@ -269,6 +269,66 @@ class CustomerServiceTest {
 
    @Test
     public void testThatCustomerCanPlaceOrder(){
+       customerService.registerCustomer(request);
+       Customer customer = customerService.findCustomer(loginRequest.getEmail());
+
+       AddProductRequest addRequest = new AddProductRequest();
+       addRequest.setProductName("productName");
+       addRequest.setProductDescription("Product_description");
+       addRequest.setProductPrice(BigDecimal.valueOf(2000));
+       addRequest.setSellerId(sellerId);
+       addRequest.setCategory(ProductCategory.CLOTHING);
+
+       AddProductRequest addRequest1 = new AddProductRequest();
+       addRequest1.setProductName("productName");
+       addRequest1.setProductDescription("Product_description");
+       addRequest1.setProductPrice(BigDecimal.valueOf(2000));
+       addRequest1.setSellerId(sellerId);
+       addRequest1.setCategory(ProductCategory.CLOTHING);
+
+       SearchForProductByNameRequest searchRequest = new SearchForProductByNameRequest();
+       searchRequest.setProductName(addRequest.getProductName());
+
+       Product product = productService.findProductBy(sellerService.addProductToStore(addRequest).getProductId());
+       Product product1 = productService.findProductBy(sellerService.addProductToStore(addRequest1).getProductId());
+
+       AddItemToCartRequest addItemToCartRequest = new AddItemToCartRequest();
+       addItemToCartRequest.setProductId(product.getId());
+       addItemToCartRequest.setCustomerId(customer.getId());
+       addItemToCartRequest.setQuantity(2);
+
+       AddItemToCartRequest addItemToCartRequest1 = new AddItemToCartRequest();
+       addItemToCartRequest1.setProductId(product1.getId());
+       addItemToCartRequest1.setCustomerId(customer.getId());
+       addItemToCartRequest1.setQuantity(3);
+
+       AddItemResponse addItemResponse =cartServices.addItemToCart(addItemToCartRequest);
+       cartServices.addItemToCart(addItemToCartRequest1);
+
+       CreateBillingFormatRequest createBillingFormatRequest = new CreateBillingFormatRequest();
+       createBillingFormatRequest.setReceiversName("receivers_name");
+       createBillingFormatRequest.setReceiversActiveContact("09027531222");
+
+       CreateAddressRequest createAddressRequest = new CreateAddressRequest();
+       createAddressRequest.setCity(City.IKEJA);
+       createAddressRequest.setStreetName("street_name");
+       createAddressRequest.setHouseNumber("N0 24");
+
+
+       PlaceOrderRequest placeOrderRequest = new PlaceOrderRequest();
+       placeOrderRequest.setCustomerId(customer.getId());
+       placeOrderRequest.setCustomerId(customer.getId());
+       placeOrderRequest.setItemId(addItemResponse.getItemId());
+
+       customerService.placeOrder(placeOrderRequest,createAddressRequest,createBillingFormatRequest);
+
+       assertEquals(1,orderService.countOrderFor(customer.getId()));
+       customer = customerService.findCustomer(request.getCustomer_email());
+       assertEquals(1,customer.getListOfOrders().size());
+   }
+
+   @Test
+    public void testThatCustomerCanCancelOrder(){
 
    }
 }
