@@ -10,15 +10,11 @@ import lombok.Setter;
 @Table(name="\"address\"")
 public class Address {
     @Column(nullable = false)
-    private String cityName;
-    @Column(nullable = false)
     private String street;
     @Column(nullable = false)
     private String houseNumber;
-    @Column(nullable = false)
-    private String countryName;
     @Column
-    private String state;
+    private City city;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
