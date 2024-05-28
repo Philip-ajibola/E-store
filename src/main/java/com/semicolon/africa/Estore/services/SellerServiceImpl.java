@@ -1,5 +1,7 @@
 package com.semicolon.africa.Estore.services;
 
+import com.semicolon.africa.Estore.data.models.Order;
+import com.semicolon.africa.Estore.data.models.OrderStatus;
 import com.semicolon.africa.Estore.data.models.Product;
 import com.semicolon.africa.Estore.data.models.Seller;
 import com.semicolon.africa.Estore.data.repositories.Sellers;
@@ -8,6 +10,7 @@ import com.semicolon.africa.Estore.dtos.response.AddProductResponse;
 import com.semicolon.africa.Estore.dtos.response.RegisterSellerResponse;
 import com.semicolon.africa.Estore.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,21 +19,54 @@ import static com.semicolon.africa.Estore.utils.Mapper.map;
 
 @Service
 public class SellerServiceImpl implements SellerService{
+    @Autowired
+    private Sellers sellers;
+    @Autowired
+    @Lazy
+    private OrderService orderService;
+    @Autowired
+    private ProductService productService;
+
     @Override
     public List<Product> findAllProductAdded(long sellerId) {
         return productService.findAllProductBy(sellerId);
     }
 
-    @Autowired
-    private Sellers sellers;
-    @Autowired
-    private ProductService productService;
+    @Override
+    public Seller findSellerBy(long sellerId) {
+        return sellers.findById(sellerId).orElseThrow(()->new SellerNotFoundException("User Not Found"));
+    }
+
+    @Override
+    public void recieveOrder(Order order, long sellerId) {
+        Seller seller = findSellerBy(sellerId);
+        seller.getListOfOrders().add(order);
+        sellers.save(seller);
+    }
+
+    @Override
+    public void confirmOrder(long orderId, long sellerId) {
+        Seller seller = findSellerBy(sellerId);
+        Order order = seller.getListOfOrders().stream().filter(order1 -> order1.getId() == orderId).findFirst().orElseThrow(()->new ItemNotFoundException("Order not found"));
+        order.setStatus(OrderStatus.CONFIRMED);
+        orderService.saveOrder(order);
+    }
+
+    @Override
+    public void cancelOrder(long orderId, long sellerId) {
+        Seller seller = findSellerBy(sellerId);
+        Order order = seller.getListOfOrders().stream().filter(order1 -> order1.getId() == orderId).findFirst().orElseThrow(()->new ItemNotFoundException("Order not found"));
+        order.setStatus(OrderStatus.CANCELLED);
+        orderService.saveOrder(order);
+    }
+
+
     @Override
     public RegisterSellerResponse registerSeller(RegisterSellerRequest request) {
         validateRequest(request);
         validateExistence(request.getSeller_email(),request.getSeller_name());
         Seller seller = sellers.save(map(request));
-            return map(seller);
+        return map(seller);
     }
 
     @Override
