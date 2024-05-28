@@ -1,20 +1,26 @@
 package com.semicolon.africa.Estore.data.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import com.semicolon.africa.Estore.services.OrderService;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Data
+@Table(name = "order_table")
 public class Order {
     @Id
+    @GeneratedValue
     private Long id;
+    private OrderStatus status;
     @OneToOne
-    private Address deliveryAddress;
-    @OneToOne
-    private Product product;
+    private Item item;
+    private long customerId;
     private BigDecimal amount;
+    @OneToOne
+    private BillingInformation billingInformation;
+     private LocalDate orderedDate;
+     private LocalDate deliveryDate;
 }
