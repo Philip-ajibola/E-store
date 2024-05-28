@@ -10,8 +10,8 @@ public class BillingInformation {
     private String receiverPhoneNumber;
     @Column( nullable = false)
     private String receiversName;
-    @Column( nullable = false)
-    private String deliveryAddress;
+    @OneToOne
+    private Address deliveryAddress;
     @OneToOne
     private CreditCardInformation creditCardInformation;
     @Id
