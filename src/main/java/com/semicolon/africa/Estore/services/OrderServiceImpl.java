@@ -5,8 +5,13 @@ import com.semicolon.africa.Estore.data.repositories.Orders;
 import com.semicolon.africa.Estore.dtos.request.CreateAddressRequest;
 import com.semicolon.africa.Estore.dtos.request.CreateBillingFormatRequest;
 import com.semicolon.africa.Estore.dtos.request.PlaceOrderRequest;
+import com.semicolon.africa.Estore.dtos.response.OrderResponse;
 import com.semicolon.africa.Estore.dtos.response.PlaceOrderResponse;
+import com.semicolon.africa.Estore.exceptions.EstoreExceptions;
 import com.semicolon.africa.Estore.exceptions.OrderNotFoundException;
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -14,12 +19,16 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static com.semicolon.africa.Estore.utils.HTMLDesigns.sendOrderMessage;
 import static com.semicolon.africa.Estore.utils.Mapper.map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
     @Autowired
-    private ItemService itemService;
+    @Lazy
+    private AdminServices adminServices;
+    @Autowired
+    private MailServices mailServices;
     @Autowired
     private BillingFormationService billingFormationService;
     @Autowired
@@ -28,21 +37,20 @@ public class OrderServiceImpl implements OrderService {
     @Lazy
     private CustomerService customerService;
     @Autowired
-    private ProductService productService;
-    @Autowired
-    @Lazy
-    private SellerService sellerService;
+    private ModelMapper mapper;
     @Autowired
     private Orders orders;
     @Autowired
     private CartServices cartServices;
     @Override
-    public PlaceOrderResponse placeOrder(PlaceOrderRequest placeOrderRequest, CreateAddressRequest createAddressRequest, CreateBillingFormatRequest createBillingFormatRequest) {
-        Item item = itemService.findItem(placeOrderRequest.getItemId());
+    @Transactional
+    public PlaceOrderResponse placeOrder(PlaceOrderRequest placeOrderRequest, CreateAddressRequest createAddressRequest, CreateBillingFormatRequest createBillingFormatRequest) throws MessagingException {
+        Cart cart = cartServices.findCart(placeOrderRequest.getCartId());
         BigDecimal amount = cartServices.calculateTotalAmountOfItem(placeOrderRequest.getCustomerId());
         Address address = addressesServices.save(map(createAddressRequest));
         BillingInformation billingInformation = billingFormationService.save(map(createBillingFormatRequest,address));
-        Order order = map(placeOrderRequest,item,billingInformation,amount);
+        Order order = map(customerService.findCustomerBy(placeOrderRequest.getCustomerId()),cart,billingInformation,amount);
+
         order = orders.save(order);
         addOrderToListOfCustomerAndSeller(order);
         return map(order);
@@ -60,9 +68,27 @@ public class OrderServiceImpl implements OrderService {
         return (long)orderList.size();
     }
 
-    private void addOrderToListOfCustomerAndSeller(Order order) {
-        long sellerId = productService.findProductBy(order.getItem().getProductId()).getSellerId();
-        sellerService.recieveOrder(order,sellerId);
-        customerService.receiverOrder(order,order.getCustomerId());
+    @Override
+    public void deleteOrderById(Long orderId) {
+       Order order = orders.findById(orderId).orElseThrow(()->new OrderNotFoundException("No Order Found "));
+       if(order == null) throw new OrderNotFoundException("No Order Found ");
+       orders.deleteById(orderId);
     }
+
+    @Override
+    public List<OrderResponse> getOrderFor(Long id) {
+        return orders.findOrderByCustomerId(id).stream().map((order)->mapper.map(order, OrderResponse.class)).toList();
+    }
+
+    @Override
+    public OrderResponse confirmOrder(long orderId) {
+        Order order = orders.findById(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found"));
+        order.setStatus(OrderStatus.CONFIRMED);
+        return mapper.map(order, OrderResponse.class);
+    }
+
+    private void addOrderToListOfCustomerAndSeller(Order order) throws MessagingException {
+        customerService.customerOrders(order,order.getCustomer());
+    }
+
 }

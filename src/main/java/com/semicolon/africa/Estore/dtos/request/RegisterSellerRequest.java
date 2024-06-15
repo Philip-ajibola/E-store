@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class RegisterSellerRequest {
     @NotNull(message = "name can't be null")
-    private String seller_name;
+    private String sellerName;
     @NotNull(message = "email can't be null")
-    private String seller_email;
+    private String sellerEmail;
     @NotNull(message = "phone number can't be null ")
     private String seller_phone;
     @NotNull(message = "provide a password ")

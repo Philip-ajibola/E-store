@@ -9,9 +9,8 @@ import java.util.List;
 
 
 public interface Products extends JpaRepository<Product, Long> {
-    Product findProductByProductName(@NotNull(message = "ProductName can't be null") String productName);
+    List<Product> findProductByProductName(@NotNull(message = "ProductName can't be null") String productName);
 
     List<Product> findProductByCategory(ProductCategory productCategory);
 
-    List<Product> findAllProductBySellerId(long sellerId);
 }

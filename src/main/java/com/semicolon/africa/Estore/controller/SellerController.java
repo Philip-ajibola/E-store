@@ -3,6 +3,7 @@ package com.semicolon.africa.Estore.controller;
 import com.semicolon.africa.Estore.dtos.request.RegisterSellerRequest;
 import com.semicolon.africa.Estore.dtos.response.RegisterSellerResponse;
 import com.semicolon.africa.Estore.services.SellerService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class SellerController {
     private SellerService sellerService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<RegisterSellerResponse> signUp(@RequestBody @Valid RegisterSellerRequest request) {
+    public ResponseEntity<RegisterSellerResponse> signUp(@RequestBody @Valid RegisterSellerRequest request) throws MessagingException {
         var result = sellerService.registerSeller(request);
         return ResponseEntity.ok(result);
     }

@@ -15,9 +15,13 @@ public class Order {
     @GeneratedValue
     private Long id;
     private OrderStatus status;
+    @ManyToOne
+    private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Seller seller;
     @OneToOne
-    private Item item;
-    private long customerId;
+    private Cart cart;
     private BigDecimal amount;
     @OneToOne
     private BillingInformation billingInformation;

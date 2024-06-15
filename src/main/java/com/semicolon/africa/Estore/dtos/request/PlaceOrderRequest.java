@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class PlaceOrderRequest {
     private long customerId;
-    private long itemId;
+    private Long cartId;
+  //  private long sellerId;
 }

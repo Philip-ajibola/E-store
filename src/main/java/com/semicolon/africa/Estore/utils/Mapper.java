@@ -12,13 +12,14 @@ public class Mapper {
         RegisterSellerResponse registerSellerResponse = new RegisterSellerResponse();
         registerSellerResponse.setSeller_name(seller.getUsername());
         registerSellerResponse.setId(seller.getId());
+        registerSellerResponse.setDateCreated(seller.getDateCreated());
         return registerSellerResponse;
     }
 
     public static Seller map(RegisterSellerRequest request) {
         Seller seller = new Seller();
-        seller.setEmail(request.getSeller_email());
-        seller.setUsername(request.getSeller_name());
+        seller.setEmail(request.getSellerEmail());
+        seller.setUsername(request.getSellerName());
         seller.setPhone(request.getSeller_phone());
         seller.setPassword(request.getPassword());
         return seller;
@@ -27,7 +28,6 @@ public class Mapper {
         Product product = new Product();
         product.setProductDescription(addProduct.getProductDescription());
         product.setProductName(addProduct.getProductName());
-        product.setSellerId(addProduct.getSellerId());
         product.setProductPrice(addProduct.getProductPrice().setScale(2, RoundingMode.HALF_EVEN));
         product.setCategory(addProduct.getCategory());
         return product;
@@ -42,15 +42,17 @@ public class Mapper {
     public static Customer map(RegisterCustomerRequest request) {
         Customer customer = new Customer();
         customer.setPassword(request.getPassword());
-        customer.setUsername(request.getCustomer_name());
-        customer.setEmail(request.getCustomer_email());
-        customer.setPhone(request.getCustomer_phone());
+        customer.setUsername(request.getCustomerName());
+        customer.setEmail(request.getCustomerEmail());
+        customer.setPhone(request.getCustomerPhone());
+        customer.setRole(request.getRole());
         return customer;
     }
     public static RegisterCustomerResponse map(Customer customer) {
         RegisterCustomerResponse registerCustomerResponse = new RegisterCustomerResponse();
         registerCustomerResponse.setSeller_name(customer.getUsername());
         registerCustomerResponse.setId(customer.getId());
+        registerCustomerResponse.setDateCreated(customer.getDateCreated());
         return registerCustomerResponse;
     }
     public static Item map(AddItemToCartRequest addItemToCartRequest) {
@@ -62,10 +64,7 @@ public class Mapper {
     }
     public static AddItemResponse map(Product product, Item item) {
         AddItemResponse addItemResponse = new AddItemResponse();
-        addItemResponse.setProductName(product.getProductName());
         addItemResponse.setItemId(item.getId());
-        addItemResponse.setQuantity(item.getQuantity());
-        addItemResponse.setPrice(product.getProductPrice());
         return addItemResponse;
     }
     public static Item map(long productId, int quantity) {
@@ -74,10 +73,10 @@ public class Mapper {
         item.setQuantity(quantity);
         return item;
     }
-    public static Order map(PlaceOrderRequest placeOrderRequest, Item item, BillingInformation billingInformation, BigDecimal amount) {
+    public static Order map(Customer customer, Cart cart, BillingInformation billingInformation, BigDecimal amount) {
         Order order = new Order();
-        order.setCustomerId(placeOrderRequest.getCustomerId());
-        order.setItem(item);
+        order.setCustomer(customer);
+        order.setCart(cart);
         order.setBillingInformation(billingInformation);
         order.setAmount(amount);
         order.setStatus(OrderStatus.PENDING);

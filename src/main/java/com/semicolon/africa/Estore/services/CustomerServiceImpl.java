@@ -2,18 +2,23 @@ package com.semicolon.africa.Estore.services;
 
 import com.semicolon.africa.Estore.data.models.*;
 import com.semicolon.africa.Estore.data.repositories.Customers;
+import com.semicolon.africa.Estore.data.repositories.Orders;
 import com.semicolon.africa.Estore.dtos.request.*;
-import com.semicolon.africa.Estore.dtos.response.AddProductResponse;
-import com.semicolon.africa.Estore.dtos.response.PlaceOrderResponse;
-import com.semicolon.africa.Estore.dtos.response.RegisterCustomerResponse;
-import com.semicolon.africa.Estore.exceptions.InvalidPasswordException;
-import com.semicolon.africa.Estore.exceptions.UserNotFoundException;
+import com.semicolon.africa.Estore.dtos.response.*;
+import com.semicolon.africa.Estore.exceptions.*;
+
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.semicolon.africa.Estore.utils.HTMLDesigns.sendWelcomeMessage;
 import static com.semicolon.africa.Estore.utils.Mapper.map;
 
 @Service
@@ -21,28 +26,72 @@ public class CustomerServiceImpl implements CustomerService{
     @Autowired
     private Customers customers;
     @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authManager;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private MailServices mailServices;
+    @Autowired
     @Lazy
     private OrderService orderService;
     @Autowired
     private ProductService productService;
+    @Autowired
+    private CartServices cartServices;
+    @Autowired
+    private Orders orders;
+
     @Override
     public long count() {
         return customers.count();
     }
 
     @Override
+    @Transactional
     public RegisterCustomerResponse registerCustomer(RegisterCustomerRequest request) {
-        Customer customer = customers.save(map(request));
-        return map(customer);
+        validateExistingCustomer(request.getCustomerEmail());
+        try {
+//        if(EmailValidator.getInstance().isValid(request.getCustomerEmail()))throw new InvalidEmailException("Provide A valid email Please");
+            Customer customer = map(request);
+            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+            customer = customers.save(customer);
+            Cart cart = new Cart();
+            cart.setCustomerId(customer.getId());
+            customer.setCart(cart);
+            cartServices.save(cart);
+            customers.save(customer);
+            String subject = "WELCOME TO BOBBY'S STORE";
+            mailServices.sendMail(request.getCustomerEmail(), subject, sendWelcomeMessage(request.getCustomerName()));
+            return map(customer);
+        }catch(MessagingException e){
+            throw new PictureUpLoadFialedException(e.getMessage());
+        }
+    }
+
+    private void validateExistingCustomer(String customerEmail) {
+        Customer customer = customers.findByEmail(customerEmail);
+        if(customer!= null) throw new InvalidEmailException("Email Already Exist");
     }
 
     @Override
-    public String login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         Customer customer = findCustomer(loginRequest.getEmail());
+        validatePassword(customer,loginRequest.getPassword());
         customer.setActive(true);
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        var jwt = jwtService.generateToken(customer);
+        var refreshedToken = jwtService.generateRefreshToken(customer);
         customers.save(customer);
-        return "Login successful";
+        LoginResponse loginResponse = new LoginResponse(jwt, refreshedToken);
+        return loginResponse;
     }
+
+    private void validatePassword(Customer customer,String password) {
+        if(!passwordEncoder.matches(password,customer.getPassword()))throw new InvalidPasswordException("Invalid password Or email");
+    }
+
     @Override
     public Customer findCustomer(String email) {
         Customer customer = customers.findByEmail(email);
@@ -60,7 +109,7 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public AddProductResponse searchForProductByName(SearchForProductByNameRequest searchRequest) {
+    public List<AddProductResponse> searchForProductByName(SearchForProductByNameRequest searchRequest) {
         return  productService.findProductByName(searchRequest);
     }
 
@@ -70,17 +119,55 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public PlaceOrderResponse placeOrder(PlaceOrderRequest placeOrderRequest, CreateAddressRequest createAddressRequest, CreateBillingFormatRequest createBillingFormatRequest) {
+    public PlaceOrderResponse placeOrder(PlaceOrderRequest placeOrderRequest, CreateAddressRequest createAddressRequest, CreateBillingFormatRequest createBillingFormatRequest) throws MessagingException {
        return orderService.placeOrder(placeOrderRequest, createAddressRequest, createBillingFormatRequest);
-
     }
 
     @Override
-    public void receiverOrder(Order order, long customerId) {
-        Customer customer = customers.findById(customerId).orElseThrow(()->new UserNotFoundException("User Not Found"));
-        customer.getListOfOrders().add(order);
+    public void customerOrders(Order order, Customer customer) {
         customers.save(customer);
     }
+
+    @Override
+    public AddItemResponse addItemToCart(AddItemToCartRequest addItemToCartRequest, Long customerId) {
+        Customer customer = customers.findById(customerId).orElseThrow(()->new UserNotFoundException("User Not Found:"));
+        return cartServices.addItemToCart(addItemToCartRequest, customer);
+    }
+
+    @Override
+    public void removeItemFromCart(RemoveItemFromCartRequest removeItemFromCartRequest, Long customerId) {
+        Customer customer = customers.findById(customerId).orElseThrow(()->new UserNotFoundException("User Not Found:"));
+         cartServices.removeItemFromCart(removeItemFromCartRequest, customer);
+    }
+
+    @Override
+    public CancelOrderResponse cancelOrder(RemoveItemFromCartRequest.CancelOrderRequest cancelOrderRequest) {
+         orderService.deleteOrderById(cancelOrderRequest.getOrderId());
+        return  new CancelOrderResponse("Order canceled");
+    }
+
+    @Override
+    public List<OrderResponse> getOrder(Long id) {
+        return orderService.getOrderFor(id);
+    }
+
+    @Override
+    public Customer save(Customer customer) {
+        return customers.save(customer);
+    }
+
+    @Override
+    public Customer findCustomerBy(Long customerId) {
+        return customers.findById(customerId).orElseThrow(()->new IllegalArgumentException("user not found"));
+    }
+
+    @Override
+    public List<OrderResponse> getListOfOrders(Long customerId) {
+        List<OrderResponse> orders = orderService.getOrderFor(customerId);
+        if(orders.isEmpty())throw new OrderNotFoundException("Order Not Found ");
+        return orders;
+    }
+
 
 
 }
