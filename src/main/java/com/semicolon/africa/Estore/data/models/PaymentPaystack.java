@@ -2,8 +2,7 @@ package com.semicolon.africa.Estore.data.models;
 
 import jakarta.persistence.*;
 import jdk.jfr.Timestamp;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -12,6 +11,9 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentPaystack {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
