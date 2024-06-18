@@ -24,9 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Properties;
 
 import static com.semicolon.africa.Estore.constant.APIConstants.*;
 
@@ -38,9 +40,17 @@ public class PaystackServiceImpl implements PayStackService {
     @Autowired
     private Customers customerRepository;
 
-    @Value("${applyforme.paystack.secret.key}")
-    private String payStackSecretKey;
+    private String getSecretKey(){
+        Properties properties = new Properties();
+        try(InputStream input = new FileInputStream("C:\\Users\\Dell\\Downloads\\E-store\\src\\main\\resources\\config.properties")){
+            properties.load(input);
+            return properties.getProperty("paystack.api.key");
+        }catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
 
+    }
 
     @Override
     public CreatePlanResponse createPlan(CreatePlanDto createPlanDto) throws Exception {
@@ -53,7 +63,7 @@ public class PaystackServiceImpl implements PayStackService {
             HttpPost post = new HttpPost(APIConstants.PAYSTACK_INIT);
             post.setEntity(postingString);
             post.addHeader("Content-type", "application/json");
-            post.addHeader("Authorization", "Bearer " + payStackSecretKey);
+            post.addHeader("Authorization", "Bearer " + getSecretKey());
             StringBuilder result = new StringBuilder();
             HttpResponse response = client.execute(post);
 
@@ -89,7 +99,7 @@ public class PaystackServiceImpl implements PayStackService {
             HttpPost post = new HttpPost(PAYSTACK_INITIALIZE_PAY);
             post.setEntity(postingString);
             post.addHeader("Content-type", "application/json");
-            post.addHeader("Authorization", "Bearer " + payStackSecretKey);
+            post.addHeader("Authorization", "Bearer " + getSecretKey());
             StringBuilder result = new StringBuilder();
             HttpResponse response = client.execute(post);
 
@@ -123,7 +133,7 @@ public class PaystackServiceImpl implements PayStackService {
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(PAYSTACK_VERIFY + reference);
             request.addHeader("Content-type", "application/json");
-            request.addHeader("Authorization", "Bearer " + payStackSecretKey);
+            request.addHeader("Authorization", "Bearer " + getSecretKey());
             StringBuilder result = new StringBuilder();
             HttpResponse response = client.execute(request);
 

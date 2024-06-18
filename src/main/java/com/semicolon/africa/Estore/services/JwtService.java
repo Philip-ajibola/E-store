@@ -9,9 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
 @Service
@@ -22,8 +19,12 @@ public class JwtService {
     public String extractUsername(String username){
         return extractClaims(username, Claims::getSubject);
     }
-    private <T> T extractClaims(String token, Function< Claims,T> claims) {
-        return claims.apply(Jwts.parser().verifyWith(getKey(token)).build().parseSignedClaims(token).getPayload());
+    private <T> T extractClaims(String token, Function< Claims,T> claimResolver) {
+        Claims claims = extractAllClaims(token);
+        return claimResolver.apply(claims);
+    }
+    private Claims extractAllClaims(String token){
+        return Jwts.parser().setSigningKey(getKey(SECRET_KEY)).build().parseClaimsJws(token).getBody();
     }
     private SecretKey getKey(String token){
         byte[] bytes = Decoders.BASE64.decode(token);
