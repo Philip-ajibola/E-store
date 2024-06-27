@@ -1,5 +1,6 @@
 package com.semicolon.africa.Estore.services;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.semicolon.africa.Estore.constant.APIConstants;
 import com.semicolon.africa.Estore.data.models.Customer;
@@ -125,7 +126,7 @@ public class PaystackServiceImpl implements PayStackService {
 
     @Override
     @Transactional
-    public PaymentVerificationResponse paymentVerification(String reference, String plan, Long id) throws  Exception {
+    public PaymentVerificationResponse paymentVerification(String reference, Long id) throws  Exception {
         PaymentVerificationResponse paymentVerificationResponse = null;
         PaymentPaystack paymentPaystack = null;
 
@@ -149,6 +150,7 @@ public class PaystackServiceImpl implements PayStackService {
             }
 
             ObjectMapper mapper = new ObjectMapper();
+            System.out.println(result.toString());
             paymentVerificationResponse = mapper.readValue(result.toString(), PaymentVerificationResponse.class);
 
             if( paymentVerificationResponse == null || paymentVerificationResponse.getStatus().equals("false")) {
@@ -156,7 +158,6 @@ public class PaystackServiceImpl implements PayStackService {
             } else if (paymentVerificationResponse. getData().getStatus().equals("success")) {
 
                 Customer appUser = customerRepository.getById(id);
-                PricingPlanType pricingPlanType = PricingPlanType.valueOf(plan.toUpperCase());
 
                 paymentPaystack = PaymentPaystack.builder()
                         .customer(appUser)
@@ -168,12 +169,11 @@ public class PaystackServiceImpl implements PayStackService {
                         .channel(paymentVerificationResponse.getData().getChannel())
                         .currency(paymentVerificationResponse.getData().getCurrency())
                         .ipAddress(paymentVerificationResponse.getData().getIpAddress())
-                        .planType(pricingPlanType)
                         .createdOn(new Date())
                         .build();
             }
         } catch (Exception ex) {
-            throw new Exception("Paystack");
+            throw new Exception(ex.getMessage());
         }
         paystackPaymentRepository.save(paymentPaystack);
         return paymentVerificationResponse;
