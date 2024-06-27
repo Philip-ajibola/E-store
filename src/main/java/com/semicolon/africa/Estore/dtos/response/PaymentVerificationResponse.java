@@ -1,6 +1,8 @@
 package com.semicolon.africa.Estore.dtos.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,11 +15,11 @@ import java.util.Date;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentVerificationResponse {
-
+    @JsonProperty("status")
     private String status;
-
+    @JsonProperty("message")
     private String message;
-
+    @JsonProperty("data")
     private Data data;
 
     @Getter
@@ -25,30 +27,33 @@ public class PaymentVerificationResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Data{
-
+        @JsonProperty("id")
+        private Long id;
+        @JsonProperty("domain")
+        private String domain;
+        @JsonProperty("status")
         private String status;
-
+        @JsonProperty("reference")
         private String reference;
-
+        @JsonProperty("amount")
         private BigDecimal amount;
-
+        @JsonProperty("gateway_response")
         private String gatewayResponse;
-
+        @JsonProperty("paid_at")
         private String paidAt;
-
+        @JsonProperty("created_at")
         private String createdAt;
-
+        @JsonProperty("channel")
         private String channel;
-
+        @JsonProperty("currency")
         private String currency;
-
+        @JsonProperty("ip_address")
         private String ipAddress;
-
-        private String pricingPlanType;
-
+        @JsonProperty("created_on")
         private Date createdOn = new Date();
-
+        @JsonProperty("updated_on")
         private Date updatedOn = new Date();
     }
 }
