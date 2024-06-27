@@ -3,9 +3,6 @@ package com.semicolon.africa.Estore.services;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.semicolon.africa.Estore.data.models.Admin;
-import com.semicolon.africa.Estore.data.models.Cart;
-import com.semicolon.africa.Estore.data.models.Customer;
-import com.semicolon.africa.Estore.data.models.Product;
 import com.semicolon.africa.Estore.data.repositories.Admins;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.*;
@@ -108,10 +105,10 @@ public class AdminServicesImpl implements AdminServices {
     }
 
     @Override
-    public Admin findAdmin(String email) {
+    public FIndAdminResponse findAdmin(String email) {
         Admin admin=  admins.findByEmail(email);
         if(admin == null)throw new UserNotFoundException("Admin not found");
-        return admin;
+        return mapper.map(admin, FIndAdminResponse.class);
     }
 
     @Override
