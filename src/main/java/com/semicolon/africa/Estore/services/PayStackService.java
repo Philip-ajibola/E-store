@@ -9,6 +9,6 @@ import com.semicolon.africa.Estore.dtos.response.PaymentVerificationResponse;
 public interface PayStackService {
     CreatePlanResponse createPlan(CreatePlanDto createPlanDto) throws Exception;
     InitializePaymentResponse initializePayment(InitializePaymentDto initializePaymentDto);
-    PaymentVerificationResponse paymentVerification(String reference, String plan, Long id) throws Exception;
+    PaymentVerificationResponse paymentVerification(String reference, Long id) throws Exception;
 
 }
