@@ -16,10 +16,8 @@ public class Order {
     private Long id;
     private OrderStatus status;
     @ManyToOne
+    @JoinColumn(name = "customer_id")
     private Customer customer;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Seller seller;
     @OneToOne
     private Cart cart;
     private BigDecimal amount;
