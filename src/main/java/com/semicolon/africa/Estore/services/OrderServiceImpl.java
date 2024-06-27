@@ -47,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     public PlaceOrderResponse placeOrder(PlaceOrderRequest placeOrderRequest, CreateAddressRequest createAddressRequest, CreateBillingFormatRequest createBillingFormatRequest) throws MessagingException {
         Cart cart = cartServices.findCart(placeOrderRequest.getCartId());
         BigDecimal amount = cartServices.calculateTotalAmountOfItem(placeOrderRequest.getCustomerId());
+        System.out.println(amount);
         Address address = addressesServices.save(map(createAddressRequest));
         BillingInformation billingInformation = billingFormationService.save(map(createBillingFormatRequest,address));
         Order order = map(customerService.findCustomerBy(placeOrderRequest.getCustomerId()),cart,billingInformation,amount);
@@ -85,6 +86,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = orders.findById(orderId).orElseThrow(()->new OrderNotFoundException("Order Not Found"));
         order.setStatus(OrderStatus.CONFIRMED);
         return mapper.map(order, OrderResponse.class);
+    }
+
+    @Override
+    public Order findBy(long orderId) {
+        return orders.findById(orderId).orElseThrow(()->new OrderNotFoundException("No Order Found"));
     }
 
     private void addOrderToListOfCustomerAndSeller(Order order) throws MessagingException {
