@@ -2,13 +2,10 @@ package com.semicolon.africa.Estore.services;
 
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import com.semicolon.africa.Estore.data.models.Admin;
-import com.semicolon.africa.Estore.data.models.Product;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.*;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 public interface AdminServices {
@@ -27,7 +24,7 @@ public interface AdminServices {
 
     void deleteAll();
 
-    Admin findAdmin(String email);
+    FIndAdminResponse findAdmin(String email);
 
     List<AddProductResponse> findAllProductAdded();
 
