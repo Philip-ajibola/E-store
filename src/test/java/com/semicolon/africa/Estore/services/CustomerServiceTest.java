@@ -4,6 +4,8 @@ import com.semicolon.africa.Estore.data.models.*;
 import com.semicolon.africa.Estore.data.repositories.Customers;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.AddItemResponse;
+import com.semicolon.africa.Estore.dtos.response.InitializePaymentResponse;
+import com.semicolon.africa.Estore.dtos.response.PaymentVerificationResponse;
 import com.semicolon.africa.Estore.dtos.response.PlaceOrderResponse;
 import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.AfterEach;
@@ -37,10 +39,11 @@ class CustomerServiceTest {
    @Autowired
    private ProductService productService;
    @Autowired
-   private CartServices cartServices;
+   private PayStackService payStackService;
    @Autowired
-   private ItemService itemService;
+   private CartServices cartServices;
    private RegisterAdminRequest registerAdminRequest;
+
 
 
 
@@ -423,13 +426,92 @@ class CustomerServiceTest {
 
 
        PlaceOrderResponse response =customerService.placeOrder(placeOrderRequest,createAddressRequest,createBillingFormatRequest);
-       RemoveItemFromCartRequest.CancelOrderRequest cancelOrderRequest = new RemoveItemFromCartRequest.CancelOrderRequest();
+       CancelOrderRequest cancelOrderRequest = new CancelOrderRequest();
         cancelOrderRequest.setCustomerId(customer.getId());
         cancelOrderRequest.setOrderId(response.getOrderId());
        System.out.println(response.getOrderId());
         customerService.cancelOrder(cancelOrderRequest);
 
-        assertEquals(0,customerService.getOrder(customer.getId()).size());
+        assertEquals(0,customerService.getListOfOrders(customer.getId()).size());
+   }
+   @Test
+    public void testThatCustomerCanPayForOrder() throws MessagingException, IOException {
+       customerService.registerCustomer(request);
+       //sellerId =sellerService.registerSeller(registerSellerRequest).getId();
+       System.out.println(sellerId);
+
+       Customer customer = customerService.findCustomer(request.getCustomerEmail());
+
+       Path path = Paths.get("C:\\Users\\Dell\\Desktop\\marverickshub\\src\\main\\resources\\static\\thanos.jpeg");
+       AddProductRequest addProduct1 = new AddProductRequest();
+       try( var inputStream = Files.newInputStream(path)){
+           addProduct1 = new AddProductRequest();
+           addProduct1.setProductName("productName");
+           addProduct1.setProductDescription("Product_description");
+           addProduct1.setProductPrice(BigDecimal.valueOf(2000));
+           addProduct1.setCategory(ProductCategory.CLOTHING);
+           MockMultipartFile file = new MockMultipartFile("image",inputStream);
+           addProduct1.setFile(file);
+       }catch(IOException exception){
+           System.err.println(exception.getMessage());
+       }
+       AddProductRequest addProduct = new AddProductRequest();
+       try( var inputStream = Files.newInputStream(path)){
+           addProduct = new AddProductRequest();
+           addProduct.setProductName("productName");
+           addProduct.setProductDescription("Product_description");
+           addProduct.setProductPrice(BigDecimal.valueOf(2000));
+           addProduct.setCategory(ProductCategory.CLOTHING);
+           MockMultipartFile file = new MockMultipartFile("image",inputStream);
+           addProduct.setFile(file);
+       }catch(IOException exception){
+           System.err.println(exception.getMessage());
+       }
+
+       SearchForProductByNameRequest searchRequest = new SearchForProductByNameRequest();
+       searchRequest.setProductName(addProduct1.getProductName());
+
+       Product product = productService.findProductBy(adminServices.addProductToStore(addProduct1).getProductId());
+       Product product1 = productService.findProductBy(adminServices.addProductToStore(addProduct).getProductId());
+
+       AddItemToCartRequest addItemToCartRequest = new AddItemToCartRequest();
+       addItemToCartRequest.setProductId(product.getId());
+       addItemToCartRequest.setCustomerId(customer.getId());
+       addItemToCartRequest.setQuantity(2);
+
+       AddItemToCartRequest addItemToCartRequest1 = new AddItemToCartRequest();
+       addItemToCartRequest1.setProductId(product1.getId());
+       addItemToCartRequest1.setCustomerId(customer.getId());
+       addItemToCartRequest1.setQuantity(3);
+
+       AddItemResponse addItemResponse =cartServices.addItemToCart(addItemToCartRequest,customer);
+       cartServices.addItemToCart(addItemToCartRequest1,customer);
+       Cart cart = cartServices.findCart(addItemResponse.getCartId());
+
+       CreateBillingFormatRequest createBillingFormatRequest = new CreateBillingFormatRequest();
+       createBillingFormatRequest.setReceiversName("receivers_name");
+       createBillingFormatRequest.setReceiversActiveContact("09027531222");
+
+       CreateAddressRequest createAddressRequest = new CreateAddressRequest();
+       createAddressRequest.setCity(City.IKEJA);
+       createAddressRequest.setStreetName("street_name");
+       createAddressRequest.setHouseNumber("N0 24");
+
+
+       PlaceOrderRequest placeOrderRequest = new PlaceOrderRequest();
+       placeOrderRequest.setCustomerId(customer.getId());
+       placeOrderRequest.setCartId(cart.getId());
+
+
+       PlaceOrderResponse response =customerService.placeOrder(placeOrderRequest,createAddressRequest,createBillingFormatRequest);
+       PaymentRequest paymentRequest = new PaymentRequest();
+       paymentRequest.setOrderId(response.getOrderId());
+       paymentRequest.setCustomerId(customer.getId());
+       paymentRequest.setAmount("10000");
+       paymentRequest.setEmail(customer.getEmail());
+       InitializePaymentResponse initializePaymentResponse = customerService.pay(paymentRequest);
+       assertNotNull(initializePaymentResponse);
+       System.out.println(initializePaymentResponse.getData().getAuthorizationUrl());
    }
 
 }
