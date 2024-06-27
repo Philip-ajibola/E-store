@@ -1,7 +1,10 @@
 package com.semicolon.africa.Estore.controller;
 
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.google.gson.JsonParseException;
 import com.semicolon.africa.Estore.dtos.response.ApiResponse;
 import com.semicolon.africa.Estore.exceptions.EstoreExceptions;
+import jakarta.mail.MessagingException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.Objects;
 
 @RestControllerAdvice
@@ -40,5 +44,20 @@ public class GlobalErrorHandler {
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         String defaultMessage = Objects.requireNonNull(ex.getBindingResult().getFieldError()).getDefaultMessage();
         return new ResponseEntity<>(new ApiResponse(false,defaultMessage), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(IOException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleIOException(IOException e) {
+        return new ResponseEntity<>(new ApiResponse(false,e.getMessage()),HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(JsonPatchException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleJsonPatchException(JsonPatchException e) {
+        return new ResponseEntity<>(new ApiResponse(false,e.getMessage()),HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(MessagingException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleMessagingException(MessagingException e) {
+        return new ResponseEntity<>(new ApiResponse(false,e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
