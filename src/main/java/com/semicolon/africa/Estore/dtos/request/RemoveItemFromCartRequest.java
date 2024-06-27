@@ -8,10 +8,4 @@ import lombok.Setter;
 public class RemoveItemFromCartRequest {
     private long itemId;
 
-    @Setter
-    @Getter
-    public static class CancelOrderRequest {
-        private Long customerId;
-        private Long orderId;
-    }
 }
