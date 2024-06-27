@@ -11,7 +11,5 @@ public class InitializePaymentDto {
 
     private String amount;
     private String email;
-    private String currency;
-    private String plan;
     private String[] channels;
 }
