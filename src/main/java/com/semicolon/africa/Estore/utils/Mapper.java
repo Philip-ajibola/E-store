@@ -8,22 +8,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class Mapper {
-    public  static RegisterSellerResponse map(Seller seller) {
-        RegisterSellerResponse registerSellerResponse = new RegisterSellerResponse();
-        registerSellerResponse.setSeller_name(seller.getUsername());
-        registerSellerResponse.setId(seller.getId());
-        registerSellerResponse.setDateCreated(seller.getDateCreated());
-        return registerSellerResponse;
-    }
 
-    public static Seller map(RegisterSellerRequest request) {
-        Seller seller = new Seller();
-        seller.setEmail(request.getSellerEmail());
-        seller.setUsername(request.getSellerName());
-        seller.setPhone(request.getSeller_phone());
-        seller.setPassword(request.getPassword());
-        return seller;
-    }
     public static Product map(AddProductRequest addProduct) {
         Product product = new Product();
         product.setProductDescription(addProduct.getProductDescription());
@@ -80,6 +65,7 @@ public class Mapper {
         order.setBillingInformation(billingInformation);
         order.setAmount(amount);
         order.setStatus(OrderStatus.PENDING);
+        customer.getOrders().add(order);
         return order;
     }
 
