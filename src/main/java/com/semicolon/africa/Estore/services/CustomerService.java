@@ -28,11 +28,9 @@ public interface CustomerService {
 
     void customerOrders(Order order, Customer customer);
     AddItemResponse addItemToCart(AddItemToCartRequest addItemToCartRequest,Long customerId);
-    void removeItemFromCart(RemoveItemFromCartRequest removeItemFromCartRequest,Long customerId);
+    String removeItemFromCart(RemoveItemFromCartRequest removeItemFromCartRequest, Long customerId);
 
-    CancelOrderResponse cancelOrder(RemoveItemFromCartRequest.CancelOrderRequest cancelOrderRequest);
-
-    List<OrderResponse> getOrder(Long id);
+    CancelOrderResponse cancelOrder(CancelOrderRequest cancelOrderRequest);
 
     Customer save(Customer customer);
 
@@ -41,6 +39,7 @@ public interface CustomerService {
     List<OrderResponse> getListOfOrders(Long customerId);
 
 
+    InitializePaymentResponse pay(PaymentRequest paymentRequest);
 }
 
 
