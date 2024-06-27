@@ -23,4 +23,6 @@ public interface OrderService {
 
 
     OrderResponse confirmOrder(long orderId);
+
+    Order findBy(long orderId);
 }
