@@ -57,6 +57,7 @@ public class CartServiceImpl implements CartServices{
     public BigDecimal calculateTotalAmountOfItem(long customerId) {
         List<Item> items = itemService.getItems(customerId);
         if(items.isEmpty())throw new ItemNotFoundException("No Items found");
+        items.forEach(item -> System.out.println(item.getProductPrice()));
         return BigDecimal.valueOf(items.stream().mapToDouble(item-> Double.parseDouble(String.valueOf(item.getProductPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))).sum());
     }
 
