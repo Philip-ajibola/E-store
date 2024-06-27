@@ -1,6 +1,7 @@
 package com.semicolon.africa.Estore.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -9,11 +10,11 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class InitializePaymentResponse {
-
+    @JsonProperty("status")
     private Boolean status;
-
+    @JsonProperty("message")
     private String message;
-
+    @JsonProperty("data")
     private Data data;
 
     @Getter
@@ -23,10 +24,11 @@ public class InitializePaymentResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public class Data{
 
+        @JsonProperty("authorization_url")
         private String authorizationUrl;
-
+        @JsonProperty("access_code")
         private String accessCode;
-
+        @JsonProperty("reference")
         private String reference;
     }
 }
