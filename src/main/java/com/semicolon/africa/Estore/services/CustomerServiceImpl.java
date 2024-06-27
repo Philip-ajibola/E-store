@@ -2,7 +2,6 @@ package com.semicolon.africa.Estore.services;
 
 import com.semicolon.africa.Estore.data.models.*;
 import com.semicolon.africa.Estore.data.repositories.Customers;
-import com.semicolon.africa.Estore.data.repositories.Orders;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.*;
 import com.semicolon.africa.Estore.exceptions.*;
@@ -16,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.semicolon.africa.Estore.utils.HTMLDesigns.sendWelcomeMessage;
@@ -41,7 +41,8 @@ public class CustomerServiceImpl implements CustomerService{
     @Autowired
     private CartServices cartServices;
     @Autowired
-    private Orders orders;
+    private PayStackService payStackService;
+
 
     @Override
     public long count() {
@@ -135,21 +136,18 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public void removeItemFromCart(RemoveItemFromCartRequest removeItemFromCartRequest, Long customerId) {
+    public String removeItemFromCart(RemoveItemFromCartRequest removeItemFromCartRequest, Long customerId) {
         Customer customer = customers.findById(customerId).orElseThrow(()->new UserNotFoundException("User Not Found:"));
          cartServices.removeItemFromCart(removeItemFromCartRequest, customer);
+         return "item removed";
     }
 
     @Override
-    public CancelOrderResponse cancelOrder(RemoveItemFromCartRequest.CancelOrderRequest cancelOrderRequest) {
+    public CancelOrderResponse cancelOrder(CancelOrderRequest cancelOrderRequest) {
          orderService.deleteOrderById(cancelOrderRequest.getOrderId());
         return  new CancelOrderResponse("Order canceled");
     }
 
-    @Override
-    public List<OrderResponse> getOrder(Long id) {
-        return orderService.getOrderFor(id);
-    }
 
     @Override
     public Customer save(Customer customer) {
@@ -167,6 +165,18 @@ public class CustomerServiceImpl implements CustomerService{
         if(orders.isEmpty())throw new OrderNotFoundException("Order Not Found ");
         return orders;
     }
+
+    @Override
+    public InitializePaymentResponse pay(PaymentRequest paymentRequest) {
+        Order order = orderService.findBy(paymentRequest.getOrderId());
+        if(order.getAmount().compareTo(BigDecimal.valueOf(Double.parseDouble(paymentRequest.getAmount())))!=0) throw new InvalidPaymentException("Provide a valid payment, the exact amount");
+        InitializePaymentDto initializePaymentDto = new InitializePaymentDto();
+        initializePaymentDto.setEmail(paymentRequest.getEmail());
+        initializePaymentDto.setAmount(paymentRequest.getAmount());
+        initializePaymentDto.setChannels(new String[]{"card"});
+        return payStackService.initializePayment(initializePaymentDto);
+    }
+
 
 
 
