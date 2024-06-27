@@ -27,6 +27,7 @@ public class ItemServiceImpl implements ItemService{
         Product product = productService.findProductBy(addItemToCartRequest.getProductId());
         if(product == null) throw new ProductNotFoundException("Product not found");
         Item item = map(addItemToCartRequest);
+        item.setProductPrice(product.getProductPrice());
         items.save(item);
         return item;
     }
