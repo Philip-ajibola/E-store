@@ -3,6 +3,7 @@ package com.semicolon.africa.Estore.services;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.semicolon.africa.Estore.data.models.Admin;
+import com.semicolon.africa.Estore.data.models.Role;
 import com.semicolon.africa.Estore.data.repositories.Admins;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.*;
@@ -42,6 +43,7 @@ public class AdminServicesImpl implements AdminServices {
 //        if(EmailValidator.getInstance().isValid(request.getCustomerEmail()))throw new InvalidEmailException("Provide A valid email Please");
             Admin admin = mapper.map(request,Admin.class);
             admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+            admin.setRole(Role.ADMIN);
             admin = admins.save(admin);
 
             String subject = "WELCOME TO BOBBY'S STORE";
