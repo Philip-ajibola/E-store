@@ -10,7 +10,6 @@ public class RegisterAdminRequest {
     private String email;
     private String password;
     private String username;
-    private Role role;
     private String phoneNumber;
 
 }
