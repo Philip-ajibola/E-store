@@ -24,9 +24,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         security.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/customer/**").hasAnyAuthority("CUSTOMER")
-                        .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                        .anyRequest().authenticated()).sessionManagement(manager-> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .requestMatchers("/api/v1/sign-up").permitAll()
+                        .requestMatchers("/api/v1/login").permitAll()
+                        .requestMatchers("/api/v2/register").permitAll()
+                        .requestMatchers("/api/v2/login").permitAll()
+                        .requestMatchers("/api/v2/**").hasAnyAuthority("CUSTOMER")
+                        .requestMatchers("/api/v1/add_product").hasAnyAuthority("ADMIN"))
                 .authenticationProvider(authenticationProvider).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return security.build();
 
