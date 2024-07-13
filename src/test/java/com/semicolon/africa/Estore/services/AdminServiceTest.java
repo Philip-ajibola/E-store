@@ -8,10 +8,11 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.github.fge.jsonpatch.ReplaceOperation;
 import com.semicolon.africa.Estore.data.models.*;
-import com.semicolon.africa.Estore.data.repositories.Sellers;
+import com.semicolon.africa.Estore.data.repositories.Admins;
 import com.semicolon.africa.Estore.dtos.request.*;
 import com.semicolon.africa.Estore.dtos.response.AddItemResponse;
 import com.semicolon.africa.Estore.dtos.response.AddProductResponse;
+import com.semicolon.africa.Estore.dtos.response.FIndAdminResponse;
 import com.semicolon.africa.Estore.dtos.response.PlaceOrderResponse;
 import com.semicolon.africa.Estore.exceptions.InvalidPasswordException;
 import com.semicolon.africa.Estore.exceptions.ProductNotFoundException;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class AdminServiceTest {
     @Autowired
-    private Sellers sellers;
+    private Admins admins;
     @Autowired
     private AdminServices adminServices;
     @Autowired
@@ -60,7 +61,6 @@ public class AdminServiceTest {
         registerAdminRequest.setEmail("adedejiadeyemi627@gmail.com");
         registerAdminRequest.setPhoneNumber("SellerPhone");
         registerAdminRequest.setPassword("Seller_password");
-        registerAdminRequest.setRole(Role.ADMIN);
 
         request = new RegisterCustomerRequest();
         request.setCustomerEmail("ajibolaphilip@gmail.com");
@@ -91,20 +91,19 @@ public class AdminServiceTest {
     }
     @AfterEach
     public void deleteAll(){
-        sellers.deleteAll();
         productService.deleteAll();
     }
     @Test
     public void testThatSellerCanRegister() throws MessagingException {
 
         adminServices.register(registerAdminRequest);
-        assertEquals("adedejiadeyemi627@gmail.com",sellers.findByEmail(registerAdminRequest.getEmail()).getUsername());
+        assertEquals("adedejiadeyemi627@gmail.com",admins.findByEmail(registerAdminRequest.getEmail()).getUsername());
         assertEquals(1, adminServices.count());
     }
     @Test
     public void testThatSellerCanFindSeller() throws MessagingException {
         adminServices.register(registerAdminRequest);
-        Admin admin = adminServices.findAdmin(registerAdminRequest.getEmail());
+        FIndAdminResponse admin = adminServices.findAdmin(registerAdminRequest.getEmail());
         assertNotNull(admin);
     }
 
@@ -174,7 +173,7 @@ public class AdminServiceTest {
     @Test
     public void testThatSellerCanDeActivateAccount() throws MessagingException {
         adminServices.register(registerAdminRequest);
-        Admin admin = adminServices.findAdmin(registerAdminRequest.getEmail());
+        FIndAdminResponse admin = adminServices.findAdmin(registerAdminRequest.getEmail());
         adminServices.deactivateAccount(admin.getId());
         assertThat(adminServices.count(),equalTo(0L));
     }
