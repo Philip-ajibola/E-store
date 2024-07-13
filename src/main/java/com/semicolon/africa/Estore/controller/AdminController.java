@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
 @Validated
@@ -39,8 +41,9 @@ public class AdminController {
         var result = adminServices.approveOrder(request);
         return ResponseEntity.ok(result);
     }
-    @PostMapping("/add_product")
-    public ResponseEntity<AddProductResponse> addProductToStore(@RequestBody AddProductRequest addProduct) throws IOException {
+
+    @PostMapping( value = "/add_product", consumes = MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AddProductResponse> addProductToStore(@ModelAttribute AddProductRequest addProduct) throws IOException {
         var result = adminServices.addProductToStore(addProduct);
         return ResponseEntity.status(CREATED).body(result);
     }
