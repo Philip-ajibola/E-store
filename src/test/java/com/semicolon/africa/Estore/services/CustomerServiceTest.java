@@ -73,7 +73,6 @@ class CustomerServiceTest {
         registerAdminRequest.setEmail("ajibolaphilip10@gmail.com");
         registerAdminRequest.setPhoneNumber("09027531222");
         registerAdminRequest.setPassword("Seller_password");
-        registerAdminRequest.setRole(Role.ADMIN);
 
         sellerId = adminServices.register(registerAdminRequest).getId();
 
